@@ -3,6 +3,102 @@ import { useNavigate } from "react-router-dom";
 import { InfoBarCopy } from "../../components/InfoBar copy";
 import { gameStateStorage, fishNetStorage, balanceStorage, pointsStorage } from "../../utils/localStorage";
 
+// Comprehensive Fish Database with Rarity System
+const FISH_DATABASE = {
+  // COMMON (60% chance) - Basic fish, low rewards
+  common: [
+    { name: 'Голец', weight: '0.800 кг', price: 150, image: '/fish pack/golec.png', points: 15, rarity: 'common' },
+    { name: 'Золотая рыбка', weight: '0.200 кг', price: 100, image: '/fish pack/zolotaya rybka.png', points: 10, rarity: 'common' },
+    { name: 'Цихлида озерная', weight: '0.400 кг', price: 120, image: '/fish pack/cihlida ozernaya.png', points: 12, rarity: 'common' },
+    { name: 'Скалярия', weight: '0.300 кг', price: 110, image: '/fish pack/skalyaria.png', points: 11, rarity: 'common' },
+    { name: 'Рыба-локман', weight: '0.600 кг', price: 140, image: '/fish pack/ryba-locman.png', points: 14, rarity: 'common' },
+  ],
+
+  // UNCOMMON (25% chance) - Medium fish, decent rewards
+  uncommon: [
+    { name: 'Карп', weight: '1.800 кг', price: 400, image: '/fish pack/carp.png', points: 40, rarity: 'uncommon' },
+    { name: 'Сазан', weight: '2.100 кг', price: 450, image: '/fish pack/sazan.png', points: 45, rarity: 'uncommon' },
+    { name: 'Белый окунь', weight: '1.200 кг', price: 350, image: '/fish pack/belyi ocun.png', points: 35, rarity: 'uncommon' },
+    { name: 'Помпано', weight: '1.500 кг', price: 380, image: '/fish pack/pompano.png', points: 38, rarity: 'uncommon' },
+    { name: 'Рыба-пинта', weight: '1.400 кг', price: 370, image: '/fish pack/ryba-pinta.png', points: 37, rarity: 'uncommon' },
+    { name: 'Лютянида', weight: '1.600 кг', price: 390, image: '/fish pack/lutyantida.png', points: 39, rarity: 'uncommon' },
+  ],
+
+  // RARE (10% chance) - Large fish, good rewards
+  rare: [
+    { name: 'Судак', weight: '3.500 кг', price: 800, image: '/fish pack/sudak.png', points: 80, rarity: 'rare' },
+    { name: 'Полосатый окунь', weight: '3.200 кг', price: 750, image: '/fish pack/polosatyi ocun.png', points: 75, rarity: 'rare' },
+    { name: 'Краснохвостый окунь', weight: '2.800 кг', price: 700, image: '/fish pack/krasnyi ocun.png', points: 70, rarity: 'rare' },
+    { name: 'Полосатый лаврак', weight: '3.000 кг', price: 730, image: '/fish pack/polosatyi lavrak.png', points: 73, rarity: 'rare' },
+    { name: 'Радужная форель', weight: '2.600 кг', price: 680, image: '/fish pack/raduzhnaya forel.png', points: 68, rarity: 'rare' },
+    { name: 'Пятнистый губан', weight: '2.900 кг', price: 720, image: '/fish pack/pyatnistyi guban.png', points: 72, rarity: 'rare' },
+    { name: 'Рыба-гамлет', weight: '2.500 кг', price: 650, image: '/fish pack/ryba gamlet.png', points: 65, rarity: 'rare' },
+  ],
+
+  // EPIC (4% chance) - Trophy fish, high rewards
+  epic: [
+    { name: 'Карп обыкновенный', weight: '5.200 кг', price: 1500, image: '/fish pack/carp obyknovenyi.png', points: 150, rarity: 'epic' },
+    { name: 'Лосось-нерка', weight: '4.800 кг', price: 1400, image: '/fish pack/losos-nerka.png', points: 140, rarity: 'epic' },
+    { name: 'Груперр', weight: '5.500 кг', price: 1600, image: '/fish pack/gruper.png', points: 160, rarity: 'epic' },
+    { name: 'Желто-синий групер', weight: '5.000 кг', price: 1450, image: '/fish pack/zhelto-sinyi gruper.png', points: 145, rarity: 'epic' },
+    { name: 'Краснохвостый снеппер', weight: '4.500 кг', price: 1300, image: '/fish pack/krasnyi snepper.png', points: 130, rarity: 'epic' },
+    { name: 'Кампечинский луциан', weight: '4.700 кг', price: 1350, image: '/fish pack/kampechinskyi lucian.png', points: 135, rarity: 'epic' },
+  ],
+
+  // LEGENDARY (1% chance) - Mythical fish, massive rewards
+  legendary: [
+    { name: 'Императорский ангел', weight: '8.500 кг', price: 3500, image: '/fish pack/imperatorskyi angel.png', points: 350, rarity: 'legendary' },
+    { name: 'Рыба-ангел', weight: '7.800 кг', price: 3200, image: '/fish pack/ryba angel.png', points: 320, rarity: 'legendary' },
+    { name: 'Хетодонтоплюс', weight: '7.500 кг', price: 3000, image: '/fish pack/chetodontoplus.png', points: 300, rarity: 'legendary' },
+    { name: 'Фиолетово-красный луциан', weight: '8.000 кг', price: 3300, image: '/fish pack/fioletovo krasnuy lucian.png', points: 330, rarity: 'legendary' },
+    { name: 'Циноскон акупа', weight: '9.200 кг', price: 4000, image: '/fish pack/cinoskon akupa.png', points: 400, rarity: 'legendary' },
+  ],
+};
+
+// Rarity weights for random selection
+const RARITY_CHANCES = {
+  common: 0.60,      // 60%
+  uncommon: 0.25,    // 25%
+  rare: 0.10,        // 10%
+  epic: 0.04,        // 4%
+  legendary: 0.01,   // 1%
+};
+
+// Function to select random fish based on rarity
+const getRandomFish = () => {
+  const rand = Math.random();
+  let cumulativeChance = 0;
+
+  for (const [rarity, chance] of Object.entries(RARITY_CHANCES)) {
+    cumulativeChance += chance;
+    if (rand <= cumulativeChance) {
+      const fishArray = FISH_DATABASE[rarity];
+      return fishArray[Math.floor(Math.random() * fishArray.length)];
+    }
+  }
+
+  // Fallback to common
+  const commonFish = FISH_DATABASE.common;
+  return commonFish[Math.floor(Math.random() * commonFish.length)];
+};
+
+// Rarity colors
+const RARITY_COLORS = {
+  common: 'text-gray-600',
+  uncommon: 'text-green-600',
+  rare: 'text-blue-600',
+  epic: 'text-purple-600',
+  legendary: 'text-yellow-600',
+};
+
+const RARITY_BADGES = {
+  common: '⚪ Обычная',
+  uncommon: '🟢 Необычная',
+  rare: '🔵 Редкая',
+  epic: '🟣 Эпическая',
+  legendary: '🟡 Легендарная',
+};
+
 export function GameUi() {
   const navigate = useNavigate();
 
@@ -20,6 +116,7 @@ export function GameUi() {
   const [scoopPosition, setScoopPosition] = useState({ x: 50, y: 50 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isOverHole, setIsOverHole] = useState(false);
 
   // Animation states
   const [rodAnimation, setRodAnimation] = useState('idle');
@@ -29,6 +126,7 @@ export function GameUi() {
   const tickIdRef = useRef(null);
   const biteTimerRef = useRef(null);
   const handledRef = useRef(false);
+  const holeRef = useRef(null);
 
   // Load game state from localStorage on mount
   useEffect(() => {
@@ -104,6 +202,22 @@ export function GameUi() {
     };
   }, [isRoadCasted, isBiting]);
 
+  // Check if scoop is over the hole
+  const checkIfOverHole = (x, y) => {
+    if (holeRef.current) {
+      const holeRect = holeRef.current.getBoundingClientRect();
+      const isOver = (
+        x >= holeRect.left &&
+        x <= holeRect.right &&
+        y >= holeRect.top &&
+        y <= holeRect.bottom
+      );
+      setIsOverHole(isOver);
+      return isOver;
+    }
+    return false;
+  };
+
   // Drag and drop handlers
   const handleScoopMouseDown = (e) => {
     e.preventDefault();
@@ -129,11 +243,7 @@ export function GameUi() {
         const newX = e.clientX - dragOffset.x;
         const newY = e.clientY - dragOffset.y;
         setScoopPosition({ x: newX, y: newY });
-
-        // Check if scoop is over the hole (center-left area)
-        if (newX > 100 && newX < 300 && newY > 200 && newY < 500) {
-          // Visual feedback that we're over the hole
-        }
+        checkIfOverHole(e.clientX, e.clientY);
       }
     };
 
@@ -143,20 +253,19 @@ export function GameUi() {
         const newX = touch.clientX - dragOffset.x;
         const newY = touch.clientY - dragOffset.y;
         setScoopPosition({ x: newX, y: newY });
+        checkIfOverHole(touch.clientX, touch.clientY);
       }
     };
 
     const handleMouseUp = (e) => {
       if (isDragging) {
         setIsDragging(false);
-        const x = e.clientX - dragOffset.x;
-        const y = e.clientY - dragOffset.y;
 
-        // Check if dropped on the hole
-        if (x > 100 && x < 300 && y > 200 && y < 500) {
+        if (checkIfOverHole(e.clientX, e.clientY)) {
           clearHoleWithScoop();
         }
 
+        setIsOverHole(false);
         // Reset scoop position
         setTimeout(() => {
           setScoopPosition({ x: 50, y: 50 });
@@ -168,13 +277,12 @@ export function GameUi() {
       if (isDragging) {
         setIsDragging(false);
         const touch = e.changedTouches[0];
-        const x = touch.clientX - dragOffset.x;
-        const y = touch.clientY - dragOffset.y;
 
-        if (x > 100 && x < 300 && y > 200 && y < 500) {
+        if (checkIfOverHole(touch.clientX, touch.clientY)) {
           clearHoleWithScoop();
         }
 
+        setIsOverHole(false);
         setTimeout(() => {
           setScoopPosition({ x: 50, y: 50 });
         }, 300);
@@ -225,13 +333,6 @@ export function GameUi() {
     alert('✨ Лунка очищена шумовкой!');
   };
 
-  const fishTypes = [
-    { name: 'Щука', weight: '2.200 грамм', price: 1000, image: '/FISH/1.png', points: 50 },
-    { name: 'Сазан', weight: '1.300 грамм', price: 1250, image: '/FISH/2.png', points: 60 },
-    { name: 'Карп', weight: '1.200 грамм', price: 1200, image: '/FISH/3.png', points: 55 },
-    { name: 'Лещ', weight: '3.200 грамм', price: 1500, image: '/FISH/4.png', points: 75 },
-  ];
-
   // Универсальная кнопка заброса/вытаскивания
   const handleFishing = () => {
     if (!isRoadCasted) {
@@ -265,7 +366,7 @@ export function GameUi() {
       }
 
       setRodAnimation('pulling');
-      const randomFish = fishTypes[Math.floor(Math.random() * fishTypes.length)];
+      const randomFish = getRandomFish();
 
       setTimeout(() => {
         setCaughtFish(randomFish);
@@ -294,7 +395,7 @@ export function GameUi() {
     const newPoints = pointsStorage.add(caughtFish.points);
     setBalance(newBalance);
     setPoints(newPoints);
-    alert(`💰 Рыба продана за ${caughtFish.price}р! (+${caughtFish.points} очков)`);
+    alert(`💰 Рыба продана за ${caughtFish.price}₽! (+${caughtFish.points} очков)`);
     closeModal();
   };
 
@@ -302,9 +403,10 @@ export function GameUi() {
     const fishWithId = { ...caughtFish, id: Date.now() };
     const updatedNet = fishNetStorage.addFish(fishWithId);
     setFishNet(updatedNet);
-    const newPoints = pointsStorage.add(Math.floor(caughtFish.points / 2));
+    const halfPoints = Math.floor(caughtFish.points / 2);
+    const newPoints = pointsStorage.add(halfPoints);
     setPoints(newPoints);
-    alert(`🎣 Рыба заброшена в садок! (+${Math.floor(caughtFish.points / 2)} очков)`);
+    alert(`🎣 Рыба заброшена в садок! (+${halfPoints} очков)`);
     closeModal();
   };
 
@@ -321,8 +423,25 @@ export function GameUi() {
       <InfoBarCopy />
 
       {/* Points display */}
-      <div className="absolute top-12 sm:top-14 right-2 sm:right-4 bg-purple-600/90 px-3 py-1 rounded-lg z-50">
+      <div className="absolute top-12 sm:top-14 right-2 sm:right-4 bg-purple-600/90 px-3 py-1 rounded-lg z-50 shadow-lg">
         <p className="text-white font-bold text-xs sm:text-sm">⭐ {points} очков</p>
+      </div>
+
+      {/* Ice Hole Drop Zone - Centered under the fishing rod */}
+      <div
+        ref={holeRef}
+        className={`absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/4 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full transition-all duration-300 ${
+          isOverHole ? 'bg-blue-400/40 border-4 border-blue-500' : 'bg-transparent'
+        }`}
+        style={{ zIndex: 5 }}
+      >
+        {!isHoleCleared && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-white font-bold text-sm sm:text-base bg-black/60 px-3 py-1 rounded-lg">
+              🎯 Лунка здесь!
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Draggable Ice Scoop */}
@@ -341,19 +460,21 @@ export function GameUi() {
           className="select-none"
         >
           <div className="relative">
-            <div className={`w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full border-4 border-gray-600 flex items-center justify-center shadow-2xl ${isDragging ? 'scale-110' : 'scale-100'} transition-transform`}>
+            <div className={`w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full border-4 ${
+              isOverHole ? 'border-green-500' : 'border-gray-600'
+            } flex items-center justify-center shadow-2xl ${isDragging ? 'scale-110' : 'scale-100'} transition-all`}>
               <span className="text-2xl sm:text-3xl">🥄</span>
             </div>
             {!isDragging && (
               <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap animate-bounce">
-                Перетащи на лунку!
+                Перетащи в центр!
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Fish caught modal - responsive */}
+      {/* Fish caught modal - responsive with rarity display */}
       {showFishModal && caughtFish && (
         <div className="fixed inset-0 items-center justify-center flex z-50 p-2 sm:p-4 bg-black/50">
           <div
@@ -361,8 +482,11 @@ export function GameUi() {
             className="w-full max-w-2xl bg-cover bg-center rounded-2xl border-2 border-white flex flex-col justify-between p-4 sm:p-6 relative animate-fadeIn"
           >
             <div className="flex-row justify-between items-start flex gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
-              <div className="flex flex-col justify-start items-start gap-2 sm:gap-4 md:gap-8">
+              <div className="flex flex-col justify-start items-start gap-2 sm:gap-3 md:gap-4">
                 <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-black font-bold">{`🐟 ${caughtFish.name}`}</p>
+                <p className={`text-base sm:text-lg md:text-xl font-bold ${RARITY_COLORS[caughtFish.rarity]}`}>
+                  {RARITY_BADGES[caughtFish.rarity]}
+                </p>
                 <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-700 font-bold">{`⚖️ ${caughtFish.weight}`}</p>
                 <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-green-700 font-bold">{`💰 ${caughtFish.price}₽`}</p>
                 <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-purple-700 font-bold">{`⭐ +${caughtFish.points} очков`}</p>
@@ -379,21 +503,21 @@ export function GameUi() {
             <div className="bottom-6 justify-center flex gap-2 sm:gap-4 lg:gap-6 mt-4 flex-wrap">
               <button
                 onClick={sellFish}
-                className="border-2 border-black p-2 sm:p-3 md:p-4 items-center bg-green-500/70 hover:bg-green-600 transition-colors rounded-lg"
+                className="border-2 border-black p-2 sm:p-3 md:p-4 items-center bg-green-500/70 hover:bg-green-600 transition-colors rounded-lg shadow-lg"
               >
-                <p className="text-white font-bold text-sm sm:text-lg md:text-2xl lg:text-3xl">💰 Продать</p>
+                <p className="text-white font-bold text-sm sm:text-lg md:text-xl lg:text-2xl">💰 Продать</p>
               </button>
               <button
                 onClick={grabFish}
-                className="border-2 border-black p-2 sm:p-3 md:p-4 items-center bg-blue-500/70 hover:bg-blue-600 transition-colors rounded-lg"
+                className="border-2 border-black p-2 sm:p-3 md:p-4 items-center bg-blue-500/70 hover:bg-blue-600 transition-colors rounded-lg shadow-lg"
               >
-                <p className="text-white font-bold text-sm sm:text-lg md:text-2xl lg:text-3xl">🎣 В садок</p>
+                <p className="text-white font-bold text-sm sm:text-lg md:text-xl lg:text-2xl">🎣 В садок</p>
               </button>
               <button
                 onClick={cancelFish}
-                className="border-2 border-black p-2 sm:p-3 md:p-4 items-center bg-gray-500/70 hover:bg-gray-600 transition-colors rounded-lg"
+                className="border-2 border-black p-2 sm:p-3 md:p-4 items-center bg-gray-500/70 hover:bg-gray-600 transition-colors rounded-lg shadow-lg"
               >
-                <p className="text-white font-bold text-sm sm:text-lg md:text-2xl lg:text-3xl">🐟 Отпустить</p>
+                <p className="text-white font-bold text-sm sm:text-lg md:text-xl lg:text-2xl">🐟 Отпустить</p>
               </button>
             </div>
           </div>
@@ -405,7 +529,7 @@ export function GameUi() {
         <button
           onClick={handleFishing}
           style={{ backgroundImage: "url('/background/box.png')" }}
-          className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 bg-cover bg-center hover:scale-110 transition-transform ${isBiting ? 'animate-pulse' : ''}`}
+          className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 bg-cover bg-center hover:scale-110 transition-transform shadow-lg ${isBiting ? 'animate-pulse' : ''}`}
         >
           <p className="font-bold text-black text-sm sm:text-base md:text-lg lg:text-xl">
             {isRoadCasted ? (isBiting ? '🎣 Тянуть!' : '⏳ Ждать...') : '🎣 Забросить'}
@@ -436,7 +560,7 @@ export function GameUi() {
         <button
           onClick={() => navigate('/')}
           style={{ backgroundImage: "url('/background/box.png')" }}
-          className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-cover bg-center hover:scale-110 transition-transform"
+          className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-cover bg-center hover:scale-110 transition-transform shadow-lg"
         >
           <p className="font-bold text-black text-[10px] sm:text-xs md:text-sm lg:text-base">🏠 На базу</p>
         </button>
@@ -444,10 +568,11 @@ export function GameUi() {
 
       {/* Water ripples effect */}
       {waterRipples && (
-        <div className="absolute left-1/3 top-1/2 z-10">
+        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/4 z-10">
           <div className="relative">
-            <div className="absolute w-12 h-12 bg-blue-400/30 rounded-full animate-ping"></div>
-            <div className="absolute w-8 h-8 bg-blue-500/30 rounded-full animate-ping animation-delay-100"></div>
+            <div className="absolute w-16 h-16 bg-blue-400/30 rounded-full animate-ping"></div>
+            <div className="absolute w-12 h-12 bg-blue-500/30 rounded-full animate-ping animation-delay-100"></div>
+            <div className="absolute w-8 h-8 bg-blue-600/30 rounded-full animate-ping animation-delay-200"></div>
           </div>
         </div>
       )}
@@ -505,6 +630,10 @@ export function GameUi() {
 
         .animation-delay-100 {
           animation-delay: 100ms;
+        }
+
+        .animation-delay-200 {
+          animation-delay: 200ms;
         }
       `}</style>
     </div>

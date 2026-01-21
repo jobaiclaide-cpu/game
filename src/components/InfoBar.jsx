@@ -1,22 +1,29 @@
 import { useState, useEffect } from 'react';
-import { playerStorage, balanceStorage } from '../utils/localStorage';
+import { playerStorage, balanceStorage, pointsStorage } from '../utils/localStorage';
 
 export function InfoBar() {
     const [playerData, setPlayerData] = useState(playerStorage.get());
     const [balance, setBalance] = useState(balanceStorage.get());
+    const [points, setPoints] = useState(pointsStorage.get());
 
     // Load data from localStorage on mount
     useEffect(() => {
         const loadedPlayer = playerStorage.get();
         const loadedBalance = balanceStorage.get();
+        const loadedPoints = pointsStorage.get();
         setPlayerData(loadedPlayer);
         setBalance(loadedBalance);
+        setPoints(loadedPoints);
     }, []);
 
-    // Update localStorage when balance changes
+    // Update localStorage when balance or points change
     useEffect(() => {
         balanceStorage.set(balance);
     }, [balance]);
+
+    useEffect(() => {
+        pointsStorage.set(points);
+    }, [points]);
 
     return (
         <div className="relative App">
@@ -39,15 +46,21 @@ export function InfoBar() {
             </div>
         </div>
 
-        {/* Balance - responsive sizing */}
-        <button className="flex items-center justify-between text-white font-bold absolute top-0.5 right-0 pl-2 rounded-l-2xl gap-1 sm:gap-2 bg-blue-900/90 sm:w-24 md:w-28 lg:w-30 h-10 z-50">
-        <img
-        className="flex w-8 sm:w-10"
-        src="иконки/6.png"
-        width={40}
-        alt="money"/>
-        <p className="pr-2 sm:pr-5 text-xs sm:text-base">{balance}</p>
-        </button>
+        {/* Balance and Points - responsive sizing */}
+        <div className="absolute top-0.5 right-0 flex gap-1 z-50">
+            <button className="flex items-center justify-between text-white font-bold pl-2 rounded-l-2xl gap-1 sm:gap-2 bg-purple-600/90 sm:w-20 md:w-24 h-10">
+                <span className="text-sm sm:text-base">⭐</span>
+                <p className="pr-2 sm:pr-3 text-xs sm:text-base">{points}</p>
+            </button>
+            <button className="flex items-center justify-between text-white font-bold pl-2 rounded-l-2xl gap-1 sm:gap-2 bg-blue-900/90 sm:w-24 md:w-28 lg:w-30 h-10">
+                <img
+                className="flex w-8 sm:w-10"
+                src="иконки/6.png"
+                width={40}
+                alt="money"/>
+                <p className="pr-2 sm:pr-5 text-xs sm:text-base">{balance}</p>
+            </button>
+        </div>
         </div>
     )
 }

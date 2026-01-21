@@ -14,6 +14,9 @@ const KEYS = {
   SETTINGS: 'settings',
   FISH_NET: 'fish_net',
   STATISTICS: 'statistics',
+  TOURNAMENTS: 'tournaments',
+  POINTS: 'points',
+  TOURNAMENT_HISTORY: 'tournament_history',
 };
 
 // Helper to get full key with prefix
@@ -234,6 +237,116 @@ export const statisticsStorage = {
   },
 };
 
+// Points/Experience system
+export const pointsStorage = {
+  get: () => storage.get(KEYS.POINTS, 0),
+  set: (points) => storage.set(KEYS.POINTS, points),
+  add: (amount) => {
+    const current = pointsStorage.get();
+    const newPoints = current + amount;
+    pointsStorage.set(newPoints);
+    return newPoints;
+  },
+  subtract: (amount) => {
+    const current = pointsStorage.get();
+    const newPoints = Math.max(0, current - amount);
+    pointsStorage.set(newPoints);
+    return newPoints;
+  },
+};
+
+// Tournaments
+export const tournamentsStorage = {
+  get: () => storage.get(KEYS.TOURNAMENTS, [
+    {
+      id: 1,
+      name: 'Зимний кубок',
+      description: 'Поймайте самую тяжёлую рыбу за 24 часа',
+      type: 'weight',
+      entryFee: 100,
+      status: 'active',
+      participants: 156,
+      maxParticipants: 200,
+      prizes: [
+        { place: 1, reward: 5000, points: 500 },
+        { place: 2, reward: 3000, points: 300 },
+        { place: 3, reward: 1500, points: 150 },
+      ],
+      endTime: Date.now() + 24 * 60 * 60 * 1000, // 24 hours from now
+      playerScore: 0,
+      isParticipating: false,
+    },
+    {
+      id: 2,
+      name: 'Марафон рыбака',
+      description: 'Поймайте как можно больше рыбы за 3 дня',
+      type: 'quantity',
+      entryFee: 50,
+      status: 'active',
+      participants: 203,
+      maxParticipants: 300,
+      prizes: [
+        { place: 1, reward: 10000, points: 1000 },
+        { place: 2, reward: 5000, points: 500 },
+        { place: 3, reward: 2500, points: 250 },
+      ],
+      endTime: Date.now() + 3 * 24 * 60 * 60 * 1000,
+      playerScore: 0,
+      isParticipating: false,
+    },
+    {
+      id: 3,
+      name: 'Скоростная рыбалка',
+      description: 'Кто быстрее поймает 10 рыб?',
+      type: 'speed',
+      entryFee: 200,
+      status: 'ending_soon',
+      participants: 89,
+      maxParticipants: 100,
+      prizes: [
+        { place: 1, reward: 15000, points: 1500 },
+        { place: 2, reward: 8000, points: 800 },
+        { place: 3, reward: 4000, points: 400 },
+      ],
+      endTime: Date.now() + 2 * 60 * 60 * 1000, // 2 hours
+      playerScore: 0,
+      isParticipating: false,
+    },
+  ]),
+  set: (tournaments) => storage.set(KEYS.TOURNAMENTS, tournaments),
+  join: (tournamentId) => {
+    const tournaments = tournamentsStorage.get();
+    const tournament = tournaments.find((t) => t.id === tournamentId);
+    if (tournament) {
+      tournament.isParticipating = true;
+      tournament.participants += 1;
+      tournamentsStorage.set(tournaments);
+    }
+    return tournaments;
+  },
+  updateScore: (tournamentId, score) => {
+    const tournaments = tournamentsStorage.get();
+    const tournament = tournaments.find((t) => t.id === tournamentId);
+    if (tournament) {
+      tournament.playerScore = score;
+      tournamentsStorage.set(tournaments);
+    }
+    return tournaments;
+  },
+};
+
+// Tournament history
+export const tournamentHistoryStorage = {
+  get: () => storage.get(KEYS.TOURNAMENT_HISTORY, []),
+  set: (history) => storage.set(KEYS.TOURNAMENT_HISTORY, history),
+  addResult: (result) => {
+    const history = tournamentHistoryStorage.get();
+    history.push(result);
+    tournamentHistoryStorage.set(history);
+    return history;
+  },
+};
+
 // Export all
 export default {
   storage,
@@ -246,4 +359,7 @@ export default {
   fishNetStorage,
   settingsStorage,
   statisticsStorage,
+  pointsStorage,
+  tournamentsStorage,
+  tournamentHistoryStorage,
 };
